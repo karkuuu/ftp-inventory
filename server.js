@@ -7,6 +7,7 @@ app.use(express.static('public'));
 
 // --- MASTER INVENTORY ROUTES ---
 
+// GET all products
 app.get('/api/products', (req, res) => {
   try {
     const rows = db.prepare('SELECT * FROM products').all();
@@ -16,36 +17,48 @@ app.get('/api/products', (req, res) => {
   }
 });
 
-app.post('/api/items', (req, res) => {
-  // Ensure field names match what your frontend JSON payload sends
-  const { item_id, name } = req.body;
+// POST add a new product (Fixed route to /api/products)
+app.post('/api/products', (req, res) => {
+  const { sku, name } = req.body;
 
-  if (!item_id || !name) {
-    return res.status(400).json({ error: "Item ID and Item Name are required." });
+  if (!sku || !name) {
+    return res.status(400).json({ error: "Item ID/SKU and Item Name are required." });
   }
 
   try {
-    // Check if the item_id already exists in SQLite before inserting
-    const existing = db.prepare('SELECT * FROM inventory WHERE item_id = ?').get(item_id);
+    // Check if the SKU already exists in the products table
+    const existing = db.prepare('SELECT * FROM products WHERE sku = ?').get(sku);
     if (existing) {
-      return res.status(400).json({ error: "Item ID must be unique" });
+      return res.status(400).json({ error: "Item ID must be unique." });
     }
 
-    const stmt = db.prepare('INSERT INTO inventory (item_id, name, status) VALUES (?, ?, ?)');
-    stmt.run(item_id, name, 'Available');
+    const stmt = db.prepare('INSERT INTO products (sku, name, status) VALUES (?, ?, "Available")');
+    const info = stmt.run(sku, name);
 
-    res.json({ success: true, item_id, name, status: 'Available' });
+    res.json({ id: info.lastInsertRowid, sku, name, status: 'Available' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
+// PATCH update product status
 app.patch('/api/products/:id/status', (req, res) => {
   const { status } = req.body;
   try {
     const stmt = db.prepare('UPDATE products SET status = ? WHERE id = ?');
     const info = stmt.run(status, req.params.id);
     res.json({ updated: info.changes, status });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// DELETE remove a product
+app.delete('/api/products/:id', (req, res) => {
+  try {
+    const stmt = db.prepare('DELETE FROM products WHERE id = ?');
+    const info = stmt.run(req.params.id);
+    res.json({ deleted: info.changes });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
