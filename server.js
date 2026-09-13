@@ -16,24 +16,27 @@ app.get('/api/products', (req, res) => {
   }
 });
 
-app.post('/api/products', (req, res) => {
-  const { sku, name } = req.body;
-  try {
-    const stmt = db.prepare('INSERT INTO products (sku, name, status) VALUES (?, ?, "Available")');
-    const info = stmt.run(sku, name);
-    res.json({ id: info.lastInsertRowid, sku, name, status: 'Available' });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+app.post('/api/items', (req, res) => {
+  // Ensure field names match what your frontend JSON payload sends
+  const { item_id, name } = req.body;
 
-app.delete('/api/products/:id', (req, res) => {
+  if (!item_id || !name) {
+    return res.status(400).json({ error: "Item ID and Item Name are required." });
+  }
+
   try {
-    const stmt = db.prepare('DELETE FROM products WHERE id = ?');
-    const info = stmt.run(req.params.id);
-    res.json({ deleted: info.changes });
+    // Check if the item_id already exists in SQLite before inserting
+    const existing = db.prepare('SELECT * FROM inventory WHERE item_id = ?').get(item_id);
+    if (existing) {
+      return res.status(400).json({ error: "Item ID must be unique" });
+    }
+
+    const stmt = db.prepare('INSERT INTO inventory (item_id, name, status) VALUES (?, ?, ?)');
+    stmt.run(item_id, name, 'Available');
+
+    res.json({ success: true, item_id, name, status: 'Available' });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
