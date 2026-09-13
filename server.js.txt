@@ -1,0 +1,65 @@
+// server.js
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const db = require('./database');
+
+const app = express();
+const PORT = 3000;
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static('public'));
+
+// 1. Get all products
+app.get('/api/products', (req, res) => {
+  try {
+    const products = db.prepare('SELECT * FROM products').all();
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 2. Add a new product
+app.post('/api/products', (req, res) => {
+  const { name, sku, quantity, price } = req.body;
+  try {
+    const stmt = db.prepare('INSERT INTO products (name, sku, quantity, price) VALUES (?, ?, ?, ?)');
+    const info = stmt.run(name, sku, quantity, price);
+    res.json({ id: info.lastInsertRowid, name, sku, quantity, price });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// 3. Update product quantity
+app.patch('/api/products/:id', (req, res) => {
+  const { quantity } = req.body;
+  const { id } = req.params;
+  try {
+    const stmt = db.prepare('UPDATE products SET quantity = ? WHERE id = ?');
+    const info = stmt.run(quantity, id);
+    res.json({ updated: info.changes });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// 4. Delete a product
+app.delete('/api/products/:id', (req, res) => {
+  const { id } = req.params;
+  try {
+    const stmt = db.prepare('DELETE FROM products WHERE id = ?');
+    const info = stmt.run(id);
+    res.json({ deleted: info.changes });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server running at http://localhost:${PORT}`);
+});

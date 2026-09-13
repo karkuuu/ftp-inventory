@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Borrowing Logbook - FTP</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-image: url('/ftplogo.png');
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-attachment: fixed;
+      background-size: 380px;
+      background-color: rgba(250, 235, 255, 0.9);
+      background-blend-mode: overlay;
+    }
+    .header-container { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .header-left { display: flex; align-items: center; gap: 15px; }
+    .header-logo { height: 60px; width: auto; }
+    h2 { font-size: 36px; font-weight: 900; margin: 0; color: #2d0b3f; }
+    .nav-link { padding: 10px 18px; background-color: #3f1a5b; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; }
+    .nav-link:hover { background-color: #57257e; }
+    form { background: rgba(255, 255, 255, 0.85); padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+    input { padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    button[type="submit"] { background-color: #3f1a5b; color: white; padding: 8px 16px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; background: rgba(255, 255, 255, 0.95); border-radius: 8px; overflow: hidden; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    th { background-color: #34495e; color: white; }
+  </style>
+</head>
+<body>
+
+  <div class="header-container">
+    <div class="header-left">
+      <img src="/ftplogo.png" alt="FTP Logo" class="header-logo">
+      <h2>FTP Borrowing Logbook</h2>
+    </div>
+    <a href="/" class="nav-link">← Master Inventory</a>
+  </div>
+
+  <!-- Logbook Form -->
+  <form id="logbookForm">
+    <input type="text" id="sku" placeholder="Item ID" required>
+    <input type="text" id="name" placeholder="Item Name" required>
+    <input type="text" id="borrower" placeholder="Name of Borrower" required>
+    <input type="date" id="date_borrowed" required>
+    <input type="date" id="date_due" required>
+    <button type="submit">Submit Borrow Entry</button>
+  </form>
+
+  <!-- Logbook Entries Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Log ID</th>
+        <th>Item ID</th>
+        <th>Item Name</th>
+        <th>Borrower</th>
+        <th>Date Borrowed</th>
+        <th>Expected Return Date</th>
+      </tr>
+    </thead>
+    <tbody id="logbookTable"></tbody>
+  </table>
+
+  <script>
+    async function fetchLogbook() {
+      const res = await fetch('/api/logbook');
+      const data = await res.json();
+      const tbody = document.getElementById('logbookTable');
+      tbody.innerHTML = '';
+
+      data.forEach(item => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${item.id}</td>
+            <td>${item.sku}</td>
+            <td>${item.name}</td>
+            <td>${item.borrower}</td>
+            <td>${item.date_borrowed}</td>
+            <td>${item.date_due}</td>
+          </tr>
+        `;
+      });
+    }
+
+    document.getElementById('logbookForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const payload = {
+        sku: document.getElementById('sku').value,
+        name: document.getElementById('name').value,
+        borrower: document.getElementById('borrower').value,
+        date_borrowed: document.getElementById('date_borrowed').value,
+        date_due: document.getElementById('date_due').value
+      };
+
+      const res = await fetch('/api/logbook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        e.target.reset();
+        fetchLogbook();
+        alert("Borrow recorded! Item has been automatically set to 'Not Available' in the Master Inventory.");
+      } else {
+        alert("Failed to submit entry.");
+      }
+    });
+
+    fetchLogbook();
+  </script>
+</body>
+</html>
