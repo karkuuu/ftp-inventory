@@ -6,14 +6,13 @@
   "scripts": {
   	"name": "ftp-inventory",
  	 "version": "1.0.0",
- 	 "main": "server.js",
-	 "scripts": {
-    	 "start": "node server.js",
-		 "postinstall": "npm rebuild sqlite3 --build-from-source"
+	  "main": "server.js",
+ 	 "scripts": {
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "sqlite3": "^5.1.6"
+    "better-sqlite3": "^9.0.0"
   }
 },
   "keywords": [],
