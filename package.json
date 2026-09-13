@@ -1,12 +1,16 @@
 {
-  "name": "ftp-inventory",
+  "name": "my-app",
   "version": "1.0.0",
-  "main": "server.js",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node index.js",
+    "build": "npm rebuild"
+  },
+  "engines": {
+    "node": "20.18.0"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "better-sqlite3": "^9.0.0"
+    "better-sqlite3": "^9.6.0"
   }
 }
