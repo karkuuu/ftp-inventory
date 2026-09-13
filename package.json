@@ -1,16 +1,16 @@
 {
-  "name": "my-app",
+  "name": "inventory-system",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node index.js",
-    "build": "npm rebuild"
+    "start": "node server.js"
   },
   "engines": {
     "node": "20.18.0"
   },
   "dependencies": {
+    "express": "^4.19.2",
     "better-sqlite3": "^9.6.0"
   }
 }
