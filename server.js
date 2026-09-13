@@ -17,7 +17,7 @@ app.get('/api/products', (req, res) => {
   }
 });
 
-// POST add a new product (Fixed route to /api/products)
+// POST add a new product
 app.post('/api/products', (req, res) => {
   const { sku, name } = req.body;
 
@@ -32,7 +32,8 @@ app.post('/api/products', (req, res) => {
       return res.status(400).json({ error: "Item ID must be unique." });
     }
 
-    const stmt = db.prepare('INSERT INTO products (sku, name, status) VALUES (?, ?, "Available")');
+    // Single quotes around 'Available' prevent SQLite column interpretation errors
+    const stmt = db.prepare("INSERT INTO products (sku, name, status) VALUES (?, ?, 'Available')");
     const info = stmt.run(sku, name);
 
     res.json({ id: info.lastInsertRowid, sku, name, status: 'Available' });
@@ -81,7 +82,7 @@ app.post('/api/logbook', (req, res) => {
     const insertStmt = db.prepare('INSERT INTO logbook (sku, name, borrower, date_borrowed, date_due) VALUES (?, ?, ?, ?, ?)');
     const info = insertStmt.run(sku, name, borrower, date_borrowed, date_due);
 
-    const updateStmt = db.prepare('UPDATE products SET status = "Not Available" WHERE sku = ?');
+    const updateStmt = db.prepare("UPDATE products SET status = 'Not Available' WHERE sku = ?");
     updateStmt.run(sku);
 
     res.json({ id: info.lastInsertRowid, sku, name, borrower, date_borrowed, date_due });
