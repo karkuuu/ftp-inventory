@@ -43,7 +43,6 @@
       border-bottom: 2px solid var(--border);
     }
 
-    /* Flex wrapper to align logo and title horizontally */
     .header-left {
       display: flex;
       align-items: center;
@@ -56,7 +55,6 @@
       object-fit: contain;
     }
 
-    /* Dark purple, bolder header styling */
     h1 {
       color: var(--header-purple);
       font-weight: 800;
@@ -64,11 +62,22 @@
       font-size: 1.8rem;
     }
 
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Updated Logbook Link & Admin Login Button styling to match header color */
     .nav-links a {
-      color: var(--primary);
+      color: var(--header-purple);
       text-decoration: none;
       font-weight: 600;
-      margin-left: 16px;
+    }
+
+    .admin-toggle {
+      background-color: var(--header-purple);
+      color: white;
     }
 
     .card {
@@ -108,14 +117,14 @@
       background-color: var(--primary-hover);
     }
 
-    .admin-toggle {
-      background-color: #64748b;
-    }
-
+    /* Table styling with 50% opacity background */
     table {
       width: 100%;
       border-collapse: collapse;
       margin-top: 12px;
+      background-color: rgba(255, 255, 255, 0.5);
+      border-radius: 6px;
+      overflow: hidden;
     }
 
     th, td {
@@ -125,7 +134,7 @@
     }
 
     th {
-      background-color: #f1f5f9;
+      background-color: rgba(241, 245, 249, 0.5);
       font-size: 14px;
     }
 
@@ -171,8 +180,8 @@
       <h2>Add New Item</h2>
       <form id="add-item-form" onsubmit="handleAddItem(event)">
         <div class="form-group">
-          <input type="text" id="sku-input" placeholder="Item SKU / Serial Number (e.g. SKU-101)" required />
-          <input type="text" id="name-input" placeholder="Item Name (e.g. Laptop)" required />
+          <input type="text" id="sku-input" placeholder="Item ID / Serial (e.g. LAP01)" required />
+          <input type="text" id="name-input" placeholder="Item Name (e.g. Laptop 1)" required />
           <button type="submit">Add Item</button>
         </div>
       </form>
@@ -185,7 +194,6 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>SKU</th>
             <th>Item Name</th>
             <th>Status</th>
             <th class="admin-col hidden">Actions</th>
@@ -235,8 +243,7 @@
           const isAvailable = item.status === 'Available';
           
           row.innerHTML = `
-            <td>${item.id}</td>
-            <td><strong>${item.sku}</strong></td>
+            <td><strong>${item.sku || item.id}</strong></td>
             <td>${item.name}</td>
             <td>
               <span class="badge ${isAvailable ? 'badge-available' : 'badge-unavailable'}">
